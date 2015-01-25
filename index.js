@@ -11,17 +11,19 @@ var gmusicBackend = {};
 gmusicBackend.name = 'gmusic';
 
 var gmusicDownload = function(startUrl, songID, callback, errCallback) {
+    var filePath, incompleteFilePath, req, command;
+
     var doDownload = function(streamUrl) {
         console.log('downloading song ' + songID);
 
         // download to incomplete/ directory, move it out of there once done
         // this is to safeguard against partyplay crashes and storing an
         // incomplete download in the song cache
-        var incompleteFilePath = config.songCachePath + '/gmusic/incomplete/' + songID + '.mp3';
-        var filePath = config.songCachePath + '/gmusic/' + songID + '.opus';
+        incompleteFilePath = config.songCachePath + '/gmusic/incomplete/' + songID + '.mp3';
+        filePath = config.songCachePath + '/gmusic/' + songID + '.opus';
         var incompleteSongFd = fs.openSync(incompleteFilePath, 'w');
 
-        var req = https.request(streamUrl, function(res) {
+        req = https.request(streamUrl, function(res) {
             res.on('data', function(chunk) {
                 fs.writeSync(incompleteSongFd, chunk, 0, chunk.length, null);
             });
@@ -35,7 +37,7 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
                     console.log('download finished ' + songID + ', transcoding');
                     fs.closeSync(incompleteSongFd);
                     // TODO: can we read this directly from the HTTPS stream?
-                    ffmpeg(fs.createReadStream(incompleteFilePath))
+                    command = ffmpeg(fs.createReadStream(incompleteFilePath))
                     .noVideo()
                     .audioCodec('libopus')
                     .audioBitrate('192')
@@ -88,6 +90,23 @@ var gmusicDownload = function(startUrl, songID, callback, errCallback) {
             errCallback(err);
         });
     }
+
+    return function(err) {
+        // TODO: this doesn't seem to work very well...
+        if(command)
+            command.kill();
+        if(req)
+            req.abort();
+
+        if(fs.existsSync(filePath))
+            fs.unlinkSync(filePath);
+        if(fs.existsSync(incompleteFilePath))
+            fs.unlinkSync(incompleteFilePath);
+
+        console.log('gmusic: canceled preparing: ' + songID + ': ' + err);
+
+        errCallback();
+    };
 };
 
 // cache songID to disk.
@@ -102,7 +121,7 @@ gmusicBackend.prepareSong = function(songID, callback, errCallback) {
             callback();
         return;
     } else {
-        gmusicDownload(null, songID, callback, errCallback);
+        return gmusicDownload(null, songID, callback, errCallback);
     }
 };
 
