@@ -1,0 +1,19 @@
+{
+  "name": "nodeplayer-gmusic",
+  "version": "0.1.0",
+  "description": "gmusic backend for nodeplayer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FruitieX/nodeplayer-gmusic.git"
+  },
+  "author": "FruitieX",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FruitieX/nodeplayer-gmusic/issues"
+  },
+  "homepage": "https://github.com/FruitieX/nodeplayer-gmusic"
+}
