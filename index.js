@@ -46,10 +46,12 @@ var encodeSong = function(origStream, seek, songID, progCallback, errCallback) {
             // the file and us trying to move it to the songCache
 
             // atomically move result to encodedPath
-            if(fs.existsSync(incompletePath))
+            if(fs.existsSync(incompletePath)) {
                 fs.renameSync(incompletePath, encodedPath);
-
-            progCallback(0, true);
+                progCallback(0, true);
+            } else {
+                progCallback(0, false);
+            }
         });
     });
 
