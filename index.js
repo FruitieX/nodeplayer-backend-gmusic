@@ -64,13 +64,14 @@ var encodeSong = function(origStream, seek, songID, progCallback, errCallback) {
 };
 
 var gmusicDownload = function(songID, progCallback, errCallback) {
+    var req = null;
     var gmusicStream = new stream.PassThrough();
 
     var doDownload = function(streamUrl) {
         if(streamUrl) {
             console.log('gmusic: downloading song ' + songID);
 
-            var req = https.request(streamUrl, function(res) {
+            req = https.request(streamUrl, function(res) {
                 res.pipe(gmusicStream, {end: false});
 
                 res.on('end', function() {
@@ -135,6 +136,8 @@ var gmusicDownload = function(songID, progCallback, errCallback) {
 
     var cancelEncoding = encodeSong(gmusicStream, 0, songID, progCallback, errCallback);
     return function(err) {
+        if(req)
+            req.abort();
         cancelEncoding(err);
     };
 };
