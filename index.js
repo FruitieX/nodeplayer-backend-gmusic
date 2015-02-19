@@ -159,6 +159,11 @@ gmusicBackend.prepareSong = function(songID, progCallback, errCallback) {
     }
 };
 
+gmusicBackend.isPrepared = function(songID) {
+    var filePath = config.songCachePath + '/gmusic/' + songID + '.opus';
+    return fs.existsSync(filePath);
+};
+
 // search for music from the backend
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
