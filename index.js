@@ -11,11 +11,11 @@ var config, player;
 var gmusicBackend = {};
 gmusicBackend.name = 'gmusic';
 
-function getConfigPath(config) {
+var getConfigPath = function(config) {
 	if (process.platform == 'win32')
 		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
 	else
-		return process.env.HOME, '/.' + config;
+		return process.env.HOME + '/.' + config;
 }
 
 // TODO: seeking
