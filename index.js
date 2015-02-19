@@ -1,4 +1,4 @@
-var creds = require(process.env.HOME + '/.googlePlayCreds.json');
+var creds = require(getConfigPath('googlePlayCreds.json'));
 var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
 var https = require('https');
@@ -10,6 +10,13 @@ var config, player;
 
 var gmusicBackend = {};
 gmusicBackend.name = 'gmusic';
+
+function getConfigPath(config) {
+	if (process.platform == 'win32')
+		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
+	else
+		return process.env.HOME, '/.' + config;
+}
 
 // TODO: seeking
 var encodeSong = function(origStream, seek, songID, progCallback, errCallback) {
