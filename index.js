@@ -168,7 +168,7 @@ gmusicBackend.isPrepared = function(songID) {
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
 gmusicBackend.search = function(query, callback, errCallback) {
-    gmusicBackend.pm.search(query.terms, config.searchResultCnt, function(data) {
+    gmusicBackend.pm.search(query.terms, Math.min(100, config.searchResultCnt), function(data) {
         var songs;
         var results = {};
         results.songs = {};
