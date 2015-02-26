@@ -6,7 +6,7 @@ var fs = require('fs');
 var ffmpeg = require('fluent-ffmpeg');
 var stream = require('stream');
 
-var config, player;
+var config, player, logger;
 
 var gmusicBackend = {};
 gmusicBackend.name = 'gmusic';
@@ -32,7 +32,7 @@ var encodeSong = function(origStream, seek, songID, progCallback, errCallback) {
         .audioBitrate('192')
         .format('opus')
         .on('error', function(err) {
-            console.log('gmusic: error while transcoding ' + songID + ': ' + err);
+            logger.error('error while transcoding ' + songID + ': ' + err);
             if(fs.existsSync(incompletePath))
                 fs.unlinkSync(incompletePath);
             errCallback(err);
@@ -46,7 +46,7 @@ var encodeSong = function(origStream, seek, songID, progCallback, errCallback) {
     });
     opusStream.on('end', function() {
         incompleteStream.end(undefined, undefined, function() {
-            console.log('transcoding ended for ' + songID);
+            logger.verbose('transcoding ended for ' + songID);
 
             // TODO: we don't know if transcoding ended successfully or not,
             // and there might be a race condition between errCallback deleting
@@ -62,10 +62,10 @@ var encodeSong = function(origStream, seek, songID, progCallback, errCallback) {
         });
     });
 
-    console.log('transcoding ' + songID + '...');
+    logger.verbose('transcoding ' + songID + '...');
     return function(err) {
         command.kill();
-        console.log('gmusic: canceled preparing: ' + songID + ': ' + err);
+        logger.verbose('canceled preparing: ' + songID + ': ' + err);
         if(fs.existsSync(incompletePath))
             fs.unlinkSync(incompletePath);
         errCallback('canceled preparing: ' + songID + ': ' + err);
@@ -78,32 +78,32 @@ var gmusicDownload = function(songID, progCallback, errCallback) {
 
     var doDownload = function(streamUrl) {
         if(streamUrl) {
-            console.log('gmusic: downloading song ' + songID);
+            logger.debug('downloading song ' + songID);
 
             req = https.request(streamUrl, function(res) {
                 res.pipe(gmusicStream, {end: false});
 
                 res.on('end', function() {
                     if(res.statusCode === 302) { // redirect
-                        console.log('gmusic: redirected. retrying with new URL');
+                        logger.debug('redirected. retrying with new URL');
                         res.unpipe();
                         doDownload(res.headers.location);
                     } else if (res.statusCode === 200) {
-                        console.log('gmusic: download finished');
+                        logger.debug('download finished');
                         gmusicStream.end();
                     } else {
                         gmusicStream.end();
-                        console.log('ERROR in gmusic: unknown status code ' + res.statusCode);
+                        logger.error('unknown status code ' + res.statusCode);
                         if(errCallback)
                             errCallback('unknown status code ' + res.statusCode);
                     }
                 });
             });
             req.on('error', function(e) {
-                console.log('ERROR in gmusic: ' + e + ' while fetching! reconnecting in 5s...');
+                logger.error(e + ' while fetching! reconnecting in 5s...');
                 setTimeout(function() {
                     gmusicBackend.init(function() {
-                        console.log('ERROR in gmusic while fetching! now reconnected to gmusic');
+                        logger.error('error while fetching! now reconnected to gmusic');
                         gmusicBackend.pm.getStreamUrl(songID, function(streamUrl) {
                             doDownload(streamUrl);
                         }, function(err) {
@@ -135,7 +135,7 @@ var gmusicDownload = function(songID, progCallback, errCallback) {
         if(fs.existsSync(incompleteFilePath))
             fs.unlinkSync(incompleteFilePath);
 
-        console.log('gmusic: canceled preparing: ' + songID + ': ' + err);
+        logger.verbose('canceled preparing: ' + songID + ': ' + err);
 
         errCallback();
     };
@@ -175,7 +175,7 @@ gmusicBackend.isPrepared = function(songID) {
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
 gmusicBackend.search = function(query, callback, errCallback) {
-    gmusicBackend.pm.search(query.terms, config.searchResultCnt, function(data) {
+    gmusicBackend.pm.search(query.terms, Math.min(100, config.searchResultCnt), function(data) {
         var songs;
         var results = {};
         results.songs = {};
@@ -208,9 +208,10 @@ gmusicBackend.search = function(query, callback, errCallback) {
 
 // called when partyplay is started to initialize the backend
 // do any necessary initialization here
-gmusicBackend.init = function(_player, callback) {
+gmusicBackend.init = function(_player, _logger, callback) {
     player = _player;
     config = _player.config;
+    logger = _logger;
 
     mkdirp(config.songCachePath + '/gmusic/incomplete');
 
