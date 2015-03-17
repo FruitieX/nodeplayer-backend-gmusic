@@ -1,5 +1,5 @@
-nodeplayer-gmusic
-=================
+nodeplayer-backend-gmusic
+=========================
 
 gmusic backend for nodeplayer
 
