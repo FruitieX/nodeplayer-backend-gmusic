@@ -1,6 +1,6 @@
 {
-  "name": "nodeplayer-gmusic",
-  "version": "0.1.1",
+  "name": "nodeplayer-backend-gmusic",
+  "version": "0.1.9",
   "description": "gmusic backend for nodeplayer",
   "main": "index.js",
   "scripts": {
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/FruitieX/nodeplayer-gmusic.git"
+    "url": "https://github.com/FruitieX/nodeplayer-backend-gmusic.git"
   },
   "author": "FruitieX",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/FruitieX/nodeplayer-gmusic/issues"
+    "url": "https://github.com/FruitieX/nodeplayer-backend-gmusic/issues"
   },
-  "homepage": "https://github.com/FruitieX/nodeplayer-gmusic",
+  "homepage": "https://github.com/FruitieX/nodeplayer-backend-gmusic",
   "dependencies": {
     "fluent-ffmpeg": "^2.0.0-rc3",
     "mkdirp": "^0.5.0",
