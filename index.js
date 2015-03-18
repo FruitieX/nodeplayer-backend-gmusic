@@ -1,11 +1,7 @@
-var getConfigPath = function(config) {
-	if (process.platform == 'win32')
-		return process.env.USERPROFILE + '\\nodeplayer\\' + config;
-	else
-		return process.env.HOME + '/.' + config;
-}
+'use strict';
 
-var creds = require(getConfigPath('googlePlayCreds.json'));
+var MODULE_NAME = 'backend-gmusic';
+
 var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
 var https = require('https');
@@ -13,16 +9,21 @@ var fs = require('fs');
 var ffmpeg = require('fluent-ffmpeg');
 var stream = require('stream');
 
+var nodeplayerConfig = require('nodeplayer-config');
+var coreConfig = nodeplayerConfig.getConfig();
+var defaultConfig = require('./default-config.js');
+var config = nodeplayerConfig.getConfig(MODULE_NAME, defaultConfig);
+
 var config, player, logger;
 
 var gmusicBackend = {};
-gmusicBackend.name = 'gmusic';
+gmusicBackend.name = MODULE_NAME;
 
 // TODO: seeking
 var encodeSong = function(origStream, seek, song, progCallback, errCallback) {
-    var incompletePath = config.songCachePath + '/gmusic/incomplete/' + song.songID + '.opus';
+    var incompletePath = coreConfig.songCachePath + '/gmusic/incomplete/' + song.songID + '.opus';
     var incompleteStream = fs.createWriteStream(incompletePath, {flags: 'w'});
-    var encodedPath = config.songCachePath + '/gmusic/' + song.songID + '.opus';
+    var encodedPath = coreConfig.songCachePath + '/gmusic/' + song.songID + '.opus';
 
     var command = ffmpeg(origStream)
         .noVideo()
@@ -156,7 +157,7 @@ var gmusicDownload = function(song, progCallback, errCallback) {
 // on failure: errCallback must be called with error message
 // returns a function that cancels preparing
 gmusicBackend.prepareSong = function(song, progCallback, errCallback) {
-    var filePath = config.songCachePath + '/gmusic/' + song.songID + '.opus';
+    var filePath = coreConfig.songCachePath + '/gmusic/' + song.songID + '.opus';
 
     if(fs.existsSync(filePath)) {
         // true as first argument because there is song data
@@ -167,7 +168,7 @@ gmusicBackend.prepareSong = function(song, progCallback, errCallback) {
 };
 
 gmusicBackend.isPrepared = function(song) {
-    var filePath = config.songCachePath + '/gmusic/' + song.songID + '.opus';
+    var filePath = coreConfig.songCachePath + '/gmusic/' + song.songID + '.opus';
     return fs.existsSync(filePath);
 };
 
@@ -175,7 +176,7 @@ gmusicBackend.isPrepared = function(song) {
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
 gmusicBackend.search = function(query, callback, errCallback) {
-    gmusicBackend.pm.search(query.terms, Math.min(100, config.searchResultCnt), function(data) {
+    gmusicBackend.pm.search(query.terms, Math.min(100, coreConfig.searchResultCnt), function(data) {
         var songs;
         var results = {};
         results.songs = {};
@@ -210,14 +211,13 @@ gmusicBackend.search = function(query, callback, errCallback) {
 // do any necessary initialization here
 gmusicBackend.init = function(_player, _logger, callback) {
     player = _player;
-    config = _player.config;
     logger = _logger;
 
-    mkdirp(config.songCachePath + '/gmusic/incomplete');
+    mkdirp.sync(coreConfig.songCachePath + '/gmusic/incomplete');
 
     // initialize google play music backend
     gmusicBackend.pm = new PlayMusic();
-    gmusicBackend.pm.init(creds, callback);
+    gmusicBackend.pm.init(config, callback);
 };
 
 module.exports = gmusicBackend;
