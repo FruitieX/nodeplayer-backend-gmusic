@@ -1,6 +1,8 @@
 nodeplayer-backend-gmusic
 =========================
 
+[![Build Status](https://travis-ci.org/FruitieX/nodeplayer-backend-gmusic.svg?branch=master)](https://travis-ci.org/FruitieX/nodeplayer-backend-gmusic)
+
 gmusic backend for nodeplayer
 
 Setup
