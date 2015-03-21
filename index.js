@@ -9,7 +9,7 @@ var fs = require('fs');
 var ffmpeg = require('fluent-ffmpeg');
 var stream = require('stream');
 
-var nodeplayerConfig = require('nodeplayer-config');
+var nodeplayerConfig = require('nodeplayer').config;
 var coreConfig = nodeplayerConfig.getConfig();
 var defaultConfig = require('./default-config.js');
 var config = nodeplayerConfig.getConfig(MODULE_NAME, defaultConfig);
