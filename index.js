@@ -14,7 +14,8 @@ var coreConfig = nodeplayerConfig.getConfig();
 var defaultConfig = require('./default-config.js');
 var config = nodeplayerConfig.getConfig(MODULE_NAME, defaultConfig);
 
-var config, player, logger;
+var player;
+var logger;
 
 var gmusicBackend = {};
 gmusicBackend.name = MODULE_NAME;
@@ -34,10 +35,11 @@ var encodeSong = function(origStream, seek, song, progCallback, errCallback) {
         .format('opus')
         .on('error', function(err) {
             logger.error('error while transcoding ' + song.songID + ': ' + err);
-            if(fs.existsSync(incompletePath))
+            if (fs.existsSync(incompletePath)) {
                 fs.unlinkSync(incompletePath);
+            }
             errCallback(song, err);
-        })
+        });
 
     var opusStream = command.pipe(null, {end: true});
     opusStream.on('data', function(chunk) {
@@ -54,7 +56,7 @@ var encodeSong = function(origStream, seek, song, progCallback, errCallback) {
             // the file and us trying to move it to the songCache
 
             // atomically move result to encodedPath
-            if(fs.existsSync(incompletePath)) {
+            if (fs.existsSync(incompletePath)) {
                 fs.renameSync(incompletePath, encodedPath);
                 progCallback(song, 0, true);
             } else {
@@ -67,8 +69,9 @@ var encodeSong = function(origStream, seek, song, progCallback, errCallback) {
     return function(err) {
         command.kill();
         logger.verbose('canceled preparing: ' + song.songID + ': ' + err);
-        if(fs.existsSync(incompletePath))
+        if (fs.existsSync(incompletePath)) {
             fs.unlinkSync(incompletePath);
+        }
         errCallback(song, 'canceled preparing: ' + song.songID + ': ' + err);
     };
 };
@@ -78,14 +81,14 @@ var gmusicDownload = function(song, progCallback, errCallback) {
     var gmusicStream = new stream.PassThrough();
 
     var doDownload = function(streamUrl) {
-        if(streamUrl) {
+        if (streamUrl) {
             logger.debug('downloading song ' + song.songID);
 
             req = https.request(streamUrl, function(res) {
                 res.pipe(gmusicStream, {end: false});
 
                 res.on('end', function() {
-                    if(res.statusCode === 302) { // redirect
+                    if (res.statusCode === 302) { // redirect
                         logger.debug('redirected. retrying with new URL');
                         res.unpipe();
                         doDownload(res.headers.location);
@@ -95,8 +98,9 @@ var gmusicDownload = function(song, progCallback, errCallback) {
                     } else {
                         gmusicStream.end();
                         logger.error('unknown status code ' + res.statusCode);
-                        if(errCallback)
+                        if (errCallback) {
                             errCallback(song, 'unknown status code ' + res.statusCode);
+                        }
                     }
                 });
             });
@@ -126,14 +130,14 @@ var gmusicDownload = function(song, progCallback, errCallback) {
     /*
     return function(err) {
         // TODO: this doesn't seem to work very well...
-        if(command)
+        if (command)
             command.kill();
-        if(req)
+        if (req)
             req.abort();
 
-        if(fs.existsSync(filePath))
+        if (fs.existsSync(filePath))
             fs.unlinkSync(filePath);
-        if(fs.existsSync(incompleteFilePath))
+        if (fs.existsSync(incompleteFilePath))
             fs.unlinkSync(incompleteFilePath);
 
         logger.verbose('canceled preparing: ' + songID + ': ' + err);
@@ -146,8 +150,9 @@ var gmusicDownload = function(song, progCallback, errCallback) {
 
     var cancelEncoding = encodeSong(gmusicStream, 0, song, progCallback, errCallback);
     return function(err) {
-        if(req)
+        if (req) {
             req.abort();
+        }
         cancelEncoding(err);
     };
 };
@@ -159,7 +164,7 @@ var gmusicDownload = function(song, progCallback, errCallback) {
 gmusicBackend.prepareSong = function(song, progCallback, errCallback) {
     var filePath = coreConfig.songCachePath + '/gmusic/' + song.songID + '.opus';
 
-    if(fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) {
         // true as first argument because there is song data
         progCallback(song, true, true);
     } else {
@@ -181,12 +186,12 @@ gmusicBackend.search = function(query, callback, errCallback) {
         var results = {};
         results.songs = {};
 
-        if(data.entries) {
+        if (data.entries) {
             songs = data.entries.filter(function(entry) {
                 return entry.type === '1'; // songs only, no albums/artists
             });
 
-            for(var i = 0; i < songs.length; i++) {
+            for (var i = 0; i < songs.length; i++) {
                 results.songs[songs[i].track.nid] = {
                     artist: songs[i].track.artist,
                     title: songs[i].track.title,
