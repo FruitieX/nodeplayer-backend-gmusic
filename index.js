@@ -1,6 +1,7 @@
 'use strict';
 
-var MODULE_NAME = 'backend-gmusic';
+var MODULE_NAME = 'gmusic';
+var MODULE_TYPE = 'backend';
 
 var PlayMusic = require('playmusic');
 var mkdirp = require('mkdirp');
@@ -12,7 +13,7 @@ var stream = require('stream');
 var nodeplayerConfig = require('nodeplayer').config;
 var coreConfig = nodeplayerConfig.getConfig();
 var defaultConfig = require('./default-config.js');
-var config = nodeplayerConfig.getConfig(MODULE_NAME, defaultConfig);
+var config = nodeplayerConfig.getConfig(MODULE_TYPE + '-' + MODULE_NAME, defaultConfig);
 
 var player;
 var logger;
@@ -200,7 +201,7 @@ gmusicBackend.search = function(query, callback, errCallback) {
                     duration: songs[i].track.durationMillis,
                     songID: songs[i].track.nid,
                     score: songs[i].score,
-                    backendName: 'gmusic',
+                    backendName: MODULE_NAME,
                     format: 'opus'
                 };
             }
