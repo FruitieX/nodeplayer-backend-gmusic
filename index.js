@@ -197,7 +197,12 @@ gmusicBackend.search = function(query, callback, errCallback) {
                     artist: songs[i].track.artist,
                     title: songs[i].track.title,
                     album: songs[i].track.album,
-                    albumArt: null, // TODO: can we add this?
+                    albumArt: {
+                        lq: songs[i].track.albumArtRef && songs[i].track.albumArtRef[0] ?
+                            songs[i].track.albumArtRef[0].url + '=s60-e100-c' : null,
+                        hq: songs[i].track.albumArtRef && songs[i].track.albumArtRef[0] ?
+                            songs[i].track.albumArtRef[0].url : null
+                    },
                     duration: songs[i].track.durationMillis,
                     songID: songs[i].track.nid,
                     score: songs[i].score,
