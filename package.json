@@ -1,6 +1,6 @@
 {
   "name": "nodeplayer-backend-gmusic",
-  "version": "0.1.9991",
+  "version": "0.1.9995",
   "description": "gmusic backend for nodeplayer",
   "main": "index.js",
   "scripts": {
