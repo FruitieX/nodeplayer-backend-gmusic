@@ -110,20 +110,24 @@ var gmusicDownload = function(song, progCallback, errCallback) {
                 setTimeout(function() {
                     gmusicBackend.init(function() {
                         logger.error('error while fetching! now reconnected to gmusic');
-                        gmusicBackend.pm.getStreamUrl(song.songID, function(streamUrl) {
-                            doDownload(streamUrl);
-                        }, function(err) {
-                            errCallback(song, err);
+                        gmusicBackend.pm.getStreamUrl(song.songID, function(err, streamUrl) {
+                            if (err) {
+                                errCallback(song, err);
+                            } else {
+                                doDownload(streamUrl);
+                            }
                         });
                     });
                 }, 5000);
             });
             req.end();
         } else {
-            gmusicBackend.pm.getStreamUrl(song.songID, function(streamUrl) {
-                doDownload(streamUrl);
-            }, function(err) {
-                errCallback(song, err);
+            gmusicBackend.pm.getStreamUrl(song.songID, function(err, streamUrl) {
+                if (err) {
+                    errCallback(song, err);
+                } else {
+                    doDownload(streamUrl);
+                }
             });
         }
     };
@@ -182,7 +186,12 @@ gmusicBackend.isPrepared = function(song) {
 // on success: callback must be called with a list of song objects
 // on failure: errCallback must be called with error message
 gmusicBackend.search = function(query, callback, errCallback) {
-    gmusicBackend.pm.search(query.terms, Math.min(100, coreConfig.searchResultCnt), function(data) {
+    gmusicBackend.pm.search(query.terms, Math.min(100, coreConfig.searchResultCnt), function(err, data) {
+        if (err) {
+            errCallback(err);
+            return;
+        }
+
         var songs;
         var results = {};
         results.songs = {};
