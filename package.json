@@ -20,7 +20,7 @@
     "fluent-ffmpeg": "^2.0.0-rc3",
     "mkdirp": "^0.5.0",
     "nodeplayer": "*",
-    "playmusic": "^2.0.2"
+    "playmusic": "^2.0.3"
   },
   "devDependencies": {
     "chai": "^2.1.2",
