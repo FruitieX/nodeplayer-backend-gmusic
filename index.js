@@ -228,6 +228,12 @@ gmusicBackend.search = function(query, callback, errCallback) {
     });
 };
 
+gmusicBackend.getPlaylists = function(callback) {
+    gmusicBackend.pm.getPlayListEntries(function(err, data) {
+        callback(err, data);
+    });
+};
+
 // called when partyplay is started to initialize the backend
 // do any necessary initialization here
 gmusicBackend.init = function(_player, _logger, callback) {
